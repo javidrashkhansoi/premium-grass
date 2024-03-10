@@ -649,10 +649,39 @@ tabs?.forEach(tab => {
   }
 });
 
+;// CONCATENATED MODULE: ./src/js/scripts/scripts/video.js
+/** @type {NodeListOf<HTMLButtonElement>} */
+const playButtons = document.querySelectorAll(".hero-card__play");
+
+playButtons?.forEach(button => {
+  /** @type {HTMLDivElement} */
+  const card = button.closest(".hero-card");
+  const video = button.parentElement.querySelector("video");
+
+  if (card && video) {
+    button.addEventListener("click", () => {
+      button.remove();
+      card.classList.add("hero-card--played");
+      card.classList.add("hero-card--reverse");
+      video.play();
+      video.controls = true;
+    });
+
+    video.addEventListener("playing", () => {
+      card.classList.add("hero-card--played");
+    });
+
+    video.addEventListener("pause", () => {
+      card.classList.remove("hero-card--played");
+    });
+  }
+});
+
 ;// CONCATENATED MODULE: ./src/js/scripts/scripts.js
 
 // import "./scripts/burger.js";
 // import "./scripts/up.js";
+
 
 
 
@@ -10026,6 +10055,11 @@ if (heroSlider) {
       clickable: true,
       el: ".hero-slider__pagination",
       enabled: true,
+    },
+    on: {
+      slideChangeTransitionEnd: (swiper) => {
+        if (matchMedia("(min-width: 1361px)").matches) swiper.update();
+      }
     },
     breakpoints: {
       501: {
