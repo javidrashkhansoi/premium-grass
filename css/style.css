@@ -1643,6 +1643,10 @@ html:not(.scrolled) .up {
   border-end-start-radius: min(44px, 32px + 12 * ((100vw - 375px) / 985));
 }
 
+.products-panels--rounded {
+  border-radius: min(44px, 32px + 12 * ((100vw - 375px) / 985));
+}
+
 .products-panels__more {
   margin-block-start: min(40px, 20px + 20 * ((100vw - 375px) / 985));
   margin-inline: auto;
