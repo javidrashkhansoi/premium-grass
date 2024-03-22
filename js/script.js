@@ -611,6 +611,400 @@ class HeaderObservers {
 
 const headerObservers = new HeaderObservers();
 
+;// CONCATENATED MODULE: ./src/js/modules/move.js
+class Move {
+  #$destination;
+  #$elementAtIndex;
+  #$placeholder = document.createElement("div");
+  #$target;
+  #breakpoint;
+  #breakpointType;
+  #destinationChildren;
+  #index;
+  #matchMedia;
+
+  /** @param {MoveOptions} options */
+  constructor(options) {
+    this.#$destination = document.querySelector(options.destinationSelector);
+    this.#$target = document.querySelector(options.targetSelector);
+
+    if (this.#$destination && this.#$target) {
+      this.#breakpoint = options.breakpoint ?? 768;
+      this.#breakpointType = options.breakpointType ?? "max";
+      this.#destinationChildren = this.#$destination.children;
+      this.#index = options.index ?? "last";
+      this.#matchMedia = matchMedia(`(${this.#breakpointType}-width: ${this.#breakpoint}px)`);
+
+      if (this.#index !== "first" && this.#index !== "last") {
+        this.#$elementAtIndex = this.#destinationChildren[this.#index];
+      }
+
+      this.#init();
+    }
+  }
+
+  #init() {
+    this.#$placeholder.hidden = true;
+
+    if (this.#matchMedia.matches) this.#move();
+
+    this.#matchMedia.addEventListener("change", event => {
+      event.matches ? this.#move() : this.#remove();
+    });
+  }
+
+  #move() {
+    this.#$target.insertAdjacentElement("beforebegin", this.#$placeholder);
+
+    if (this.#$elementAtIndex) {
+      this.#$elementAtIndex.insertAdjacentElement("beforebegin", this.#$target);
+    } else if (this.#index === "first") {
+      this.#$destination.insertAdjacentElement("afterbegin", this.#$target);
+    } else {
+      this.#$destination.insertAdjacentElement("beforeend", this.#$target);
+    }
+  }
+
+  #remove() {
+    this.#$placeholder.insertAdjacentElement("beforebegin", this.#$target);
+    this.#$placeholder.remove();
+  }
+}
+
+
+
+;// CONCATENATED MODULE: ./src/js/scripts/scripts/move.js
+
+
+/** @type {HTMLButtonElement} */
+const burgerButton = document.querySelector(".burger-button");
+/** @type {HTMLDivElement} */
+const headerInner = document.querySelector(".header__inner");
+
+if (burgerButton && headerInner) {
+  const move = new Move({
+    destinationSelector: ".header__inner",
+    targetSelector: ".burger-button",
+  });
+}
+
+;// CONCATENATED MODULE: ./src/js/modules/scrolling.js
+
+
+const { html: { htmlClassList: scrolling_htmlClassList, htmlStyle: scrolling_htmlStyle }, document: { body } } = App;
+const cssProperty = "--scrollbar-width";
+const fixedElements = document.querySelectorAll("[data-fixed]");
+
+fixedElements?.forEach(fixedElement => {
+  fixedElement.style.paddingRight = `var(${cssProperty})`;
+});
+
+body.style.paddingRight = `var(${cssProperty})`;
+
+class Scrolling {
+  static #addingClass = "scroll-lock";
+
+  /**
+   * @description
+   * Скрывает скроллбар.
+   *
+   * @returns {void}
+   */
+  static lock() {
+    scrolling_htmlStyle.setProperty(`${cssProperty}`, `${this.#scrollbarWidth}px`);
+    scrolling_htmlClassList.add(this.#addingClass);
+  }
+
+  /**
+   * @description
+   * Показывет скроллбар.
+   *
+   * @returns {void}
+   */
+  static unlock() {
+    scrolling_htmlStyle.removeProperty(`${cssProperty}`);
+    scrolling_htmlClassList.remove(this.#addingClass);
+  }
+
+  static get #scrollbarWidth() {
+    return innerWidth - body.offsetWidth;
+  }
+}
+
+
+
+;// CONCATENATED MODULE: ./src/js/modules/burger.js
+
+
+
+const { burger: app, dialogs, document: { body: burger_body }, headerObservers: { $header: burger_$header }, html: { htmlClassList: burger_htmlClassList } } = App;
+const selectors = {
+  button: "[data-burger=\"button\"]",
+  close: "[data-burger=\"close\"]",
+  menu: "[data-burger=\"menu\"]",
+  open: "[data-burger=\"open\"]",
+  wrapper: "[data-burger=\"wrapper\"]",
+  pageWrapper: "[data-wrapper]",
+};
+const { button: burger_button, close: burger_close, menu, open: burger_open, wrapper } = selectors;
+/** @type {HTMLButtonElement} */
+const $button = document.querySelector(burger_button);
+const $menu = document.querySelector(menu);
+const $placeholder = document.createElement("div");
+const addingClass = "burger-active";
+const buttons = !$button &&
+  document.querySelector(burger_open) && document.querySelector(burger_close) ?
+  {
+    /** @type {HTMLButtonElement} */
+    $close: document.querySelector(burger_close),
+    /** @type {HTMLButtonElement} */
+    $open: document.querySelector(burger_open)
+  } : null;
+const id = `burgerID-${Date.now().toString(36)}`;
+const isButtonsSame = !!$button;
+const menuLabel = $menu?.ariaLabel || $menu?.querySelector("nav")?.ariaLabel;
+
+class Burger {
+  #a11y;
+  #breakpoint;
+  inertingElements;
+  #matchMedia;
+  #onClickOutside = this.#closeOnClickOutside.bind(this);
+  #onClose = this.close.bind(this);
+  #onEscape = this.#closeOnEscape.bind(this);
+  #onOpen = this.open.bind(this);
+  #onToggle = this.#toggle.bind(this);
+
+  /** @param {BurgerOptions} options */
+  constructor(options = {}) {
+    if (($button || buttons) && $menu) {
+      this.#breakpoint = options.breakpoint ?? 768;
+
+      if (this.#breakpoint) {
+        this.#matchMedia = matchMedia(`(max-width: ${this.#breakpoint}px)`);
+      }
+
+      this.#a11y = {
+        buttonsLabels: {
+          close: options.a11y?.buttonsLabels?.close ?? `Закрыть "${menuLabel || "бургер-меню"}"`,
+          open: options.a11y?.buttonsLabels?.open ?? `Открыть "${menuLabel || "бургер-меню"}"`
+        },
+        inertElementsSelectors: options.a11y?.inertElementsSelectors ?? `${selectors.pageWrapper} > *:not(${selectors.wrapper})`,
+        moveMenu: options.a11y?.moveMenu ?? false,
+        wrapperSelector: options.a11y?.wrapperSelector ?? wrapper
+      }
+      this.inertingElements = document.querySelectorAll(this.#a11y.inertElementsSelectors);
+
+      this.#init();
+    }
+  }
+
+  #init() {
+    $menu.id = id;
+    $placeholder.hidden = true;
+    app.close = this.#onClose;
+    app.matchMedia = this.#matchMedia;
+
+    if (this.#breakpoint) {
+      this.#matchMedia.matches ? this.#activate() : this.#hideButtons();
+
+      this.#matchMedia.addEventListener("change", event => {
+        const { matches } = event;
+
+        if (matches) {
+          this.#activate();
+          this.#showButtons();
+        } else {
+          if (app.isActive) this.close(true);
+
+          this.#inactivate();
+          this.#hideButtons();
+        }
+      });
+    } else {
+      this.#activate();
+    }
+  }
+
+  #activate() {
+    if (isButtonsSame) {
+      $button.ariaLabel = this.#a11y.buttonsLabels.open;
+      $button.setAttribute("aria-controls", id);
+      $button.ariaExpanded = false;
+      $button.addEventListener("click", this.#onToggle);
+    } else {
+      buttons.$open.ariaLabel = this.#a11y.buttonsLabels.open;
+      buttons.$open.setAttribute("aria-controls", id);
+      buttons.$open.ariaExpanded = false;
+      buttons.$open.addEventListener("click", this.#onOpen);
+      buttons.$close.ariaLabel = this.#a11y.buttonsLabels.close;
+      buttons.$close.addEventListener("click", this.#onClose);
+    }
+
+    if (this.#a11y.moveMenu) {
+      $menu.insertAdjacentElement("afterend", $placeholder);
+
+      burger_$header ? burger_$header.insertAdjacentElement("afterend", $menu) :
+        burger_body.insertAdjacentElement("afterbegin", $menu);
+    }
+  }
+
+  #inactivate() {
+    if (isButtonsSame) {
+      $button.removeAttribute("aria-label");
+      $button.removeAttribute("aria-controls");
+      $button.removeAttribute("aria-expanded");
+      $button.removeEventListener("click", this.#onToggle);
+    } else {
+      buttons.$open.removeAttribute("aria-label");
+      buttons.$open.removeAttribute("aria-controls");
+      buttons.$open.removeAttribute("aria-expanded");
+      buttons.$open.removeEventListener("click", this.#onOpen);
+      buttons.$close.removeAttribute("aria-label");
+      buttons.$close.removeEventListener("click", this.#onClose);
+    }
+
+    if (this.#a11y.moveMenu) {
+      $placeholder.insertAdjacentElement("afterend", $menu);
+      $placeholder.remove();
+    }
+  }
+
+  #hideButtons() {
+    if (isButtonsSame) {
+      $button.hidden = true;
+    } else {
+      buttons.$open.hidden = true;
+      buttons.$close.hidden = true;
+    }
+  }
+
+  #showButtons() {
+    if (isButtonsSame) {
+      $button.hidden = false;
+    } else {
+      buttons.$open.hidden = false;
+      buttons.$close.hidden = false;
+    }
+  }
+
+  #toggle() {
+    app.isActive ? this.close() : this.open();
+  }
+
+  /**
+   * @description
+   * Открывает бургер-меню.
+   *
+   * @returns {void}
+   */
+  open() {
+    app.isActive = true;
+
+    if (isButtonsSame) {
+      $button.ariaLabel = this.#a11y.buttonsLabels.close;
+      $button.ariaExpanded = true;
+    } else {
+      buttons.$open.ariaExpanded = true;
+      buttons.$close.focus();
+    }
+
+    this.inertingElements?.forEach(inertElement => {
+      inertElement.setAttribute("inert", "");
+    });
+
+    document.addEventListener("keydown", this.#onEscape);
+    document.addEventListener("click", this.#onClickOutside);
+    Scrolling.lock();
+    burger_htmlClassList.add(addingClass);
+  }
+
+  /**
+   * @description
+   * Закрывает бургер-меню.
+   *
+   * @param {boolean} force - Если `true`, бургер-меню закроется принудительно. По умолчанию `false`.
+   *
+   * @returns {void}
+   */
+  close(force = false) {
+    if (force || !dialogs.activeDialogs) {
+      app.isActive = false;
+
+      if (isButtonsSame) {
+        $button.ariaLabel = this.#a11y.buttonsLabels.open;
+        $button.ariaExpanded = false;
+        $button.focus();
+      } else {
+        buttons.$open.ariaExpanded = false;
+        buttons.$open.focus();
+      }
+
+      this.inertingElements?.forEach(inertElement => {
+        inertElement.removeAttribute("inert");
+      });
+
+      document.removeEventListener("keydown", this.#onEscape);
+      document.removeEventListener("click", this.#onClickOutside);
+
+      if (!dialogs.activeDialogs) Scrolling.unlock();
+
+      burger_htmlClassList.remove(addingClass);
+    }
+  }
+
+  /** @param {KeyboardEvent} event */
+  #closeOnEscape(event) {
+    if (event.code === "Escape") this.close();
+  }
+
+  /** @param {MouseEvent} event */
+  #closeOnClickOutside(event) {
+    /** @type {{target: Element}} */
+    const { target } = event;
+
+    if (isButtonsSame) {
+      if (!target.closest(this.#a11y.wrapperSelector) && !target.closest(burger_button) && !target.closest(menu)) this.close();
+    } else {
+      if (!target.closest(this.#a11y.wrapperSelector) && !target.closest(burger_open) && !target.closest(menu)) this.close();
+    }
+  }
+}
+
+
+
+;// CONCATENATED MODULE: ./src/js/scripts/scripts/burger.js
+
+
+const min769px = matchMedia("(min-width: 769px)");
+const { documentElement } = document;
+/** @type {HTMLDivElement} */
+const header = document.querySelector(".header");
+/** @type {HTMLDivElement} */
+const headerNav = document.querySelector(".header-nav");
+const burger = new Burger({
+  a11y: {
+    inertElementsSelectors: min769px.matches ? "[data-wrapper] > *:not(.header-nav)" : "[data-wrapper] > *:not([data-burger=\"wrapper\"], .header-nav)",
+    moveMenu: true,
+  },
+  breakpoint: false,
+});
+
+headerNav?.addEventListener("click", event => {
+  /** @type {{target: HTMLElement}} */
+  const { target } = event;
+
+  if (min769px.matches && !target.closest(".header-nav__inner")) burger.close();
+});
+
+min769px.addEventListener("change", event => {
+  const { matches } = event;
+
+  burger.inertingElements = document.querySelectorAll(matches ? "[data-wrapper] > *:not(.header-nav)" : "[data-wrapper] > *:not([data-burger=\"wrapper\"], .header-nav)");
+
+  if (documentElement.classList.contains("burger-active") && header) header.inert = matches;
+});
+
 // EXTERNAL MODULE: ./src/js/modules/spoilers.js
 var spoilers = __webpack_require__(916);
 ;// CONCATENATED MODULE: ./src/js/scripts/scripts/spoiler.js
@@ -679,7 +1073,8 @@ playButtons?.forEach(button => {
 
 ;// CONCATENATED MODULE: ./src/js/scripts/scripts.js
 
-// import "./scripts/burger.js";
+
+
 // import "./scripts/up.js";
 
 
