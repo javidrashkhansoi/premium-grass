@@ -8177,11 +8177,11 @@ function Controller(_ref) {
       if (duration !== 0) {
         c.transitionStart();
         if (c.params.autoHeight) {
-          nextTick(() => {
+          utils_nextTick(() => {
             c.updateAutoHeight();
           });
         }
-        elementTransitionEnd(c.wrapperEl, () => {
+        utils_elementTransitionEnd(c.wrapperEl, () => {
           if (!controlled) return;
           c.transitionEnd();
         });
@@ -10484,7 +10484,49 @@ if (heroSlider) {
   });
 }
 
+;// CONCATENATED MODULE: ./src/js/libraries/swiper/sliders/objects.js
+
+
+
+const objectsThumbs = document.querySelector(".objects-slider");
+const objectsSlider = document.querySelector(".objects-thumbs");
+
+if (objectsSlider && objectsThumbs) {
+  const thumbs = new Swiper(objectsThumbs, {
+    modules: [Controller,],
+    spaceBetween: 20,
+  });
+
+  const swiper = new Swiper(objectsSlider, {
+    modules: [Keyboard, Navigation, Controller,],
+    keyboard: {
+      enabled: true,
+      pageUpDown: false,
+    },
+    navigation: {
+      enabled: true,
+      nextEl: ".objects-arrows__button--next",
+      prevEl: ".objects-arrows__button--prev",
+    },
+    breakpoints: {
+      993: {
+        spaceBetween: 20,
+      },
+    },
+    controller: {
+      control: thumbs,
+    },
+    slidesPerView: 3,
+    spaceBetween: 10,
+    centeredSlides: true,
+    slideToClickedSlide: true,
+  });
+
+  thumbs.controller.control = swiper;
+}
+
 ;// CONCATENATED MODULE: ./src/js/libraries/swiper/swiper.js
+
 
 
 // EXTERNAL MODULE: ./node_modules/fslightbox/index.js
