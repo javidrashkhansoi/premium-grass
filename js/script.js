@@ -1082,6 +1082,10 @@ const rightCard = document.querySelector(".sport__card--right");
 const topText = document.querySelector(".sport-text--top");
 /** @type {HTMLUListElement} */
 const icons = document.querySelector(".sport-text__icons");
+/** @type {HTMLDivElement} */
+const leftCardInner = document.querySelector(".sport__card--left .hero-card");
+/** @type {SVGFEGaussianBlurElement} */
+const borderRadius = document.querySelector("#border-radius feGaussianBlur");
 
 if (leftCard && bottomText) {
   const bottomTextResizeObserver = new ResizeObserver(entries => {
@@ -1094,6 +1098,18 @@ if (leftCard && bottomText) {
   });
 
   bottomTextResizeObserver.observe(bottomText);
+}
+
+if (leftCardInner && borderRadius) {
+  const leftCardInnerResizeObserver = new ResizeObserver(entries => {
+    entries.forEach(entry => {
+      const cardBorderRadius = getComputedStyle(leftCardInner).borderRadius;
+
+      borderRadius.setAttribute("stdDeviation", parseFloat(cardBorderRadius) / 2);
+    });
+  });
+
+  leftCardInnerResizeObserver.observe(leftCardInner);
 }
 
 if (rightCard && topText) {
