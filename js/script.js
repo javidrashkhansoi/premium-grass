@@ -1071,11 +1071,64 @@ playButtons?.forEach(button => {
   }
 });
 
+;// CONCATENATED MODULE: ./src/js/scripts/scripts/sport.js
+/** @type {HTMLDivElement} */
+const leftCard = document.querySelector(".sport__card--left");
+/** @type {HTMLDivElement} */
+const bottomText = document.querySelector(".sport-text--bottom");
+/** @type {HTMLDivElement} */
+const rightCard = document.querySelector(".sport__card--right");
+/** @type {HTMLDivElement} */
+const topText = document.querySelector(".sport-text--top");
+/** @type {HTMLUListElement} */
+const icons = document.querySelector(".sport-text__icons");
+
+if (leftCard && bottomText) {
+  const bottomTextResizeObserver = new ResizeObserver(entries => {
+    entries.forEach(entry => {
+      const { borderBoxSize } = entry;
+      const { blockSize } = borderBoxSize[0];
+
+      leftCard.style.setProperty("--bottom-height", `${blockSize}px`);
+    });
+  });
+
+  bottomTextResizeObserver.observe(bottomText);
+}
+
+if (rightCard && topText) {
+  const topTextResizeObserver = new ResizeObserver(entries => {
+    entries.forEach(entry => {
+      const { borderBoxSize } = entry;
+      const { blockSize } = borderBoxSize[0];
+
+      rightCard.style.setProperty("--top-height", `${blockSize}px`);
+    });
+  });
+
+  topTextResizeObserver.observe(topText);
+}
+
+
+if (icons) {
+  const iconsResizeObserver = new ResizeObserver(entries => {
+    entries.forEach(entry => {
+      const { borderBoxSize } = entry;
+      const { inlineSize } = borderBoxSize[0];
+
+      icons.style.setProperty("--icons-width", `${inlineSize}px`);
+    });
+  });
+
+  iconsResizeObserver.observe(icons);
+}
+
 ;// CONCATENATED MODULE: ./src/js/scripts/scripts.js
 
 
 
 // import "./scripts/up.js";
+
 
 
 
