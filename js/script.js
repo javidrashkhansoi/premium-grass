@@ -1162,7 +1162,7 @@ if (icons) {
  * Released on: December 13, 2021
  */
 /* eslint-disable no-param-reassign */
-function ssr_window_esm_isObject(obj) {
+function isObject(obj) {
   return obj !== null && typeof obj === 'object' && 'constructor' in obj && obj.constructor === Object;
 }
 function extend(target, src) {
@@ -1173,7 +1173,7 @@ function extend(target, src) {
     src = {};
   }
   Object.keys(src).forEach(key => {
-    if (typeof target[key] === 'undefined') target[key] = src[key];else if (ssr_window_esm_isObject(src[key]) && ssr_window_esm_isObject(target[key]) && Object.keys(src[key]).length > 0) {
+    if (typeof target[key] === 'undefined') target[key] = src[key];else if (isObject(src[key]) && isObject(target[key]) && Object.keys(src[key]).length > 0) {
       extend(target[key], src[key]);
     }
   });
@@ -9265,7 +9265,7 @@ function Thumb(_ref) {
         slideToClickedSlide: false
       });
       swiper.thumbs.swiper.update();
-    } else if (isObject(thumbsParams.swiper)) {
+    } else if (utils_isObject(thumbsParams.swiper)) {
       const thumbsSwiperParams = Object.assign({}, thumbsParams.swiper);
       Object.assign(thumbsSwiperParams, {
         watchSlidesProgress: true,
@@ -9296,7 +9296,7 @@ function Thumb(_ref) {
     thumbsSwiper.slides.forEach(slideEl => slideEl.classList.remove(thumbActiveClass));
     if (thumbsSwiper.params.loop || thumbsSwiper.params.virtual && thumbsSwiper.params.virtual.enabled) {
       for (let i = 0; i < thumbsToActivate; i += 1) {
-        elementChildren(thumbsSwiper.slidesEl, `[data-swiper-slide-index="${swiper.realIndex + i}"]`).forEach(slideEl => {
+        utils_elementChildren(thumbsSwiper.slidesEl, `[data-swiper-slide-index="${swiper.realIndex + i}"]`).forEach(slideEl => {
           slideEl.classList.add(thumbActiveClass);
         });
       }
@@ -9342,7 +9342,7 @@ function Thumb(_ref) {
     } = swiper.params;
     if (!thumbs || !thumbs.swiper) return;
     if (typeof thumbs.swiper === 'string' || thumbs.swiper instanceof HTMLElement) {
-      const document = getDocument();
+      const document = ssr_window_esm_getDocument();
       const getThumbsElementAndInit = () => {
         const thumbsElement = typeof thumbs.swiper === 'string' ? document.querySelector(thumbs.swiper) : thumbs.swiper;
         if (thumbsElement && thumbsElement.swiper) {
@@ -10594,7 +10594,49 @@ if (objectsSlider && objectsThumbs) {
   thumbs.controller.control = swiper;
 }
 
+;// CONCATENATED MODULE: ./src/js/libraries/swiper/sliders/popup.js
+
+
+
+const popupSwiper = document.querySelector(".popup-swiper");
+const popupThumbs = document.querySelector(".popup-thumbs");
+
+
+if (popupSwiper && popupThumbs) {
+  const thumbs = new Swiper(popupThumbs, {
+    breakpoints: {
+      501: {
+        slidesPerView: 5,
+      },
+      769: {
+        slidesPerView: 4,
+        spaceBetween: 20,
+      },
+    },
+    slidesPerView: 3,
+    spaceBetween: 10,
+  });
+
+  const swiper = new Swiper(popupSwiper, {
+    modules: [Keyboard, Navigation, Thumb,],
+    keyboard: {
+      enabled: true,
+      pageUpDown: false,
+    },
+    navigation: {
+      enabled: true,
+      nextEl: ".popup-arrows__button--next",
+      prevEl: ".popup-arrows__button--prev",
+    },
+    thumbs: {
+      swiper: thumbs,
+    },
+    spaceBetween: 20,
+  });
+}
+
 ;// CONCATENATED MODULE: ./src/js/libraries/swiper/swiper.js
+
 
 
 
