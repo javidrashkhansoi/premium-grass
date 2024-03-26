@@ -984,25 +984,10 @@ const header = document.querySelector(".header");
 const headerNav = document.querySelector(".header-nav");
 const burger = new Burger({
   a11y: {
-    inertElementsSelectors: min769px.matches ? "[data-wrapper] > *:not(.header-nav)" : "[data-wrapper] > *:not([data-burger=\"wrapper\"], .header-nav)",
+    inertElementsSelectors: "[data-wrapper] > *:not([data-burger=\"wrapper\"], .header-nav)",
     moveMenu: true,
   },
   breakpoint: false,
-});
-
-headerNav?.addEventListener("click", event => {
-  /** @type {{target: HTMLElement}} */
-  const { target } = event;
-
-  if (min769px.matches && !target.closest(".header-nav__inner")) burger.close();
-});
-
-min769px.addEventListener("change", event => {
-  const { matches } = event;
-
-  burger.inertingElements = document.querySelectorAll(matches ? "[data-wrapper] > *:not(.header-nav)" : "[data-wrapper] > *:not([data-burger=\"wrapper\"], .header-nav)");
-
-  if (documentElement.classList.contains("burger-active") && header) header.inert = matches;
 });
 
 // EXTERNAL MODULE: ./src/js/modules/spoilers.js
@@ -1139,11 +1124,202 @@ if (icons) {
   iconsResizeObserver.observe(icons);
 }
 
+;// CONCATENATED MODULE: ./src/js/scripts/scripts/popup.js
+/** @type {NodeListOf<HTMLButtonElement>} */
+const popupMoreButtons = document.querySelectorAll(".popup-more");
+
+popupMoreButtons?.forEach(button => {
+  const section = button.closest(".popup-section");
+
+  if (section) {
+    const { dataset } = button;
+    const { showText = "Читать дальше", hideText = "Свернуть" } = dataset;
+    const buttonText = button.querySelector("span");
+
+    button.addEventListener("click", () => {
+      section.classList.toggle("popup-section--show-text");
+
+      if (buttonText) buttonText.innerText = section.classList.contains("popup-section--show-text") ? hideText : showText;
+    });
+  }
+});
+
+;// CONCATENATED MODULE: ./src/js/modules/same.js
+class Same {
+  /** @type {NodeListOf<HTMLDivElement>} */
+  #elements;
+  #breakpoint;
+  #breakpointType;
+  #cssProperties = {
+    height: "--same-height",
+    width: "--same-width"
+  };
+  #matchMedia;
+  /** @type {ResizeObserver} */
+  #observer;
+  #same;
+
+  /** @param {SameOptions} options */
+  constructor(options) {
+    this.#breakpoint = options.breakpoint;
+    this.#elements = document.querySelectorAll(options.selector);
+    this.#same = options.same;
+
+    if (this.#breakpoint) {
+      this.#breakpointType = options.breakpointType ?? "min";
+      this.#matchMedia = matchMedia(`(${this.#breakpointType}-width: ${this.#breakpoint}px)`);
+    }
+
+    if (this.#elements.length && this.#same) {
+      this.#init();
+    }
+  }
+
+  #init() {
+    if (this.#breakpoint) {
+      if (this.#matchMedia.matches) this.#resizeObserver();
+
+      this.#matchMedia.addEventListener("change", event => {
+        const { matches } = event;
+
+        if (matches) {
+          this.#resizeObserver();
+        } else {
+          this.#observer?.disconnect();
+
+          if (this.#same === "height") {
+            this.#removeHeightProperty();
+          } else if (this.#same === "width") {
+            this.#removeWidthProperty();
+          } else {
+            this.#removeBothProperties();
+          }
+        }
+      });
+    } else {
+      this.#resizeObserver();
+    }
+  }
+
+  #resizeObserver() {
+    this.#observer = new ResizeObserver(entries => {
+      entries.forEach(entry => {
+        if (this.#same === "height") {
+          this.#removeHeightProperty();
+
+          const maxHeight = Math.max(...[...this.#elements].map($element => {
+            return parseFloat(getComputedStyle($element).height);
+          }));
+
+          this.#elements.forEach($element => {
+            $element.style.setProperty(this.#cssProperties.height, `${maxHeight || 0}px`);
+          });
+        } else if (this.#same === "width") {
+          this.#removeWidthProperty();
+
+          const maxWidth = Math.max(...[...this.#elements].map($element => {
+            return parseFloat(getComputedStyle($element).width);
+          }));
+
+          this.#elements.forEach($element => {
+            $element.style.setProperty(this.#cssProperties.width, `${maxWidth || 0}px`);
+          });
+        } else {
+          this.#removeBothProperties();
+
+          const maxHeight = Math.max(...[...this.#elements].map($element => {
+            return parseFloat(getComputedStyle($element).height);
+          }));
+
+          const maxWidth = Math.max(...[...this.#elements].map($element => {
+            return parseFloat(getComputedStyle($element).width);
+          }));
+
+          this.#elements.forEach($element => {
+            $element.style.setProperty(this.#cssProperties.height, `${maxHeight || 0}px`);
+            $element.style.setProperty(this.#cssProperties.width, `${maxWidth || 0}px`);
+          });
+        }
+      });
+    });
+
+    this.#elements.forEach($element => {
+      this.#observer.observe($element);
+    });
+  }
+
+  #removeHeightProperty() {
+    this.#elements.forEach($element => {
+      $element.style.removeProperty(this.#cssProperties.height);
+    });
+  }
+
+  #removeWidthProperty() {
+    this.#elements.forEach($element => {
+      $element.style.removeProperty(this.#cssProperties.width);
+    });
+  }
+
+  #removeBothProperties() {
+    this.#elements.forEach($element => {
+      $element.style.removeProperty(this.#cssProperties.height);
+      $element.style.removeProperty(this.#cssProperties.width);
+    });
+  }
+}
+
+
+
+;// CONCATENATED MODULE: ./src/js/scripts/scripts/same.js
+
+
+/** @type {NodeListOf<HTMLElement>} */
+const pricesLabels = document.querySelectorAll(".product-prices__label");
+
+if (pricesLabels.length) {
+  const same = new Same({
+    same: "width",
+    selector: ".product-prices__label",
+  });
+}
+
+;// CONCATENATED MODULE: ./src/js/scripts/scripts/copy.js
+/** @type {HTMLButtonElement} */
+const copyButton = document.querySelector(".popup-copy");
+/** @type {HTMLSpanElement} */
+const span = copyButton?.querySelector(".popup-copy__text");
+const copy_text = span?.querySelector("span");
+
+if (copy_text) {
+  copyButton.addEventListener("click", () => {
+    if (!copyButton.classList.contains("popup-copy--clicked")) {
+      const { dataset } = copyButton;
+      const { copy = "скопировано" } = dataset;
+      const html = span.innerHTML;
+      const textContent = copy_text.innerText;
+
+      navigator.clipboard.writeText(textContent)
+        .then(() => {
+          copyButton.classList.add("popup-copy--clicked");
+          span.innerHTML = copy;
+
+          setTimeout(() => {
+            copyButton.classList.remove("popup-copy--clicked");
+            span.innerHTML = html;
+          }, 1000);
+        });
+    }
+  });
+}
+
 ;// CONCATENATED MODULE: ./src/js/scripts/scripts.js
 
 
 
 // import "./scripts/up.js";
+
+
+
 
 
 
@@ -10563,6 +10739,8 @@ const objectsSlider = document.querySelector(".objects-thumbs");
 if (objectsSlider && objectsThumbs) {
   const thumbs = new Swiper(objectsThumbs, {
     modules: [Controller,],
+    loop: true,
+    loopAddBlankSlides: true,
     spaceBetween: 20,
   });
 
@@ -10585,6 +10763,8 @@ if (objectsSlider && objectsThumbs) {
     controller: {
       control: thumbs,
     },
+    loop: true,
+    loopAddBlankSlides: true,
     slidesPerView: 3,
     spaceBetween: 10,
     centeredSlides: true,
@@ -10635,7 +10815,31 @@ if (popupSwiper && popupThumbs) {
   });
 }
 
+;// CONCATENATED MODULE: ./src/js/libraries/swiper/sliders/certificates.js
+
+
+
+const productCertificatesSlider = document.querySelector(".product-certificates-slider");
+
+if (productCertificatesSlider) {
+  const swiper = new Swiper(productCertificatesSlider, {
+    modules: [Keyboard,],
+    keyboard: {
+      enabled: true,
+      pageUpDown: false,
+    },
+    breakpoints: {
+      501: {
+        slidesPerView: 4,
+      },
+    },
+    slidesPerView: 3,
+    spaceBetween: 10,
+  });
+}
+
 ;// CONCATENATED MODULE: ./src/js/libraries/swiper/swiper.js
+
 
 
 
