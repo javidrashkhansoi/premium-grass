@@ -10913,7 +10913,53 @@ if (productCertificatesSlider) {
   });
 }
 
+;// CONCATENATED MODULE: ./src/js/libraries/swiper/sliders/popup.js
+
+
+
+/** @type {NodeListOf<HTMLDivElement>} */
+const popupSlides = document.querySelectorAll(".object:not(.popup) .popup-slider, .product:not(.popup)");
+
+popupSlides?.forEach(popupSlide => {
+  const popupSwiper = popupSlide.querySelector(".popup-swiper");
+  const popupThumbs = popupSlide.querySelector(".popup-thumbs");
+
+  if (popupSwiper && popupThumbs) {
+    const thumbs = new Swiper(popupThumbs, {
+      breakpoints: {
+        501: {
+          slidesPerView: 5,
+        },
+        769: {
+          slidesPerView: 4,
+          spaceBetween: 20,
+        },
+      },
+      slidesPerView: 3,
+      spaceBetween: 10,
+    });
+
+    const swiper = new Swiper(popupSwiper, {
+      modules: [Keyboard, Navigation, Thumb,],
+      keyboard: {
+        enabled: true,
+        pageUpDown: false,
+      },
+      navigation: {
+        enabled: true,
+        nextEl: ".popup-arrows__button--next",
+        prevEl: ".popup-arrows__button--prev",
+      },
+      thumbs: {
+        swiper: thumbs,
+      },
+      spaceBetween: 20,
+    });
+  }
+});
+
 ;// CONCATENATED MODULE: ./src/js/libraries/swiper/swiper.js
+
 
 
 

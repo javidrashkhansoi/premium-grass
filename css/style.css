@@ -2874,7 +2874,7 @@ html:not(.scrolled) .up {
   border-radius: 16px;
 }
 
-.popup-swiper:not(.swiper-initialized) {
+.popup .popup-swiper:not(.swiper-initialized) {
   opacity: 0;
 }
 
@@ -2889,7 +2889,7 @@ html:not(.scrolled) .up {
   border-radius: 16px;
 }
 
-.popup-thumbs:not(.swiper-initialized) {
+.popup .popup-thumbs:not(.swiper-initialized) {
   opacity: 0;
 }
 
