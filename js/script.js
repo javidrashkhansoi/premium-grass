@@ -10501,13 +10501,13 @@ const popupObject = document.querySelector("[data-card=\"object\"]");
 /** @type {HTMLDivElement} */
 const popupProduct = document.querySelector("[data-card=\"product\"]");
 
+/** @type {Swiper} */
+let swiper;
+/** @type {Swiper} */
+let thumbs;
+
 if (popupObject || popupProduct) {
   const min769px = matchMedia("(min-width: 769px)");
-
-  /** @type {Swiper} */
-  let swiper;
-  /** @type {Swiper} */
-  let thumbs;
 
   document.addEventListener("click", event => {
     /** @type {{target: HTMLElement}} */
@@ -10588,56 +10588,64 @@ if (popupObject || popupProduct) {
       if (!target.closest(".popup-block") || target.closest(".popup-block__close")) hidePopup(popup);
     });
   }
-
-  function initSlides() {
-    const activePopup = document.querySelector(".popup--show");
-    const popupSwiper = activePopup.querySelector(".popup-swiper");
-    const popupThumbs = activePopup.querySelector(".popup-thumbs");
-
-    if (popupSwiper && popupThumbs) {
-      thumbs = new Swiper(popupThumbs, {
-        breakpoints: {
-          501: {
-            slidesPerView: 5,
-          },
-          769: {
-            slidesPerView: 4,
-            spaceBetween: 20,
-          },
-        },
-        slidesPerView: 3,
-        spaceBetween: 10,
-      });
-
-      swiper = new Swiper(popupSwiper, {
-        modules: [Keyboard, Navigation, Thumb,],
-        keyboard: {
-          enabled: true,
-          pageUpDown: false,
-        },
-        navigation: {
-          enabled: true,
-          nextEl: ".popup-arrows__button--next",
-          prevEl: ".popup-arrows__button--prev",
-        },
-        thumbs: {
-          swiper: thumbs,
-        },
-        spaceBetween: 20,
-      });
-    }
-  }
-
-  function destroySlides() {
-    if (swiper instanceof Swiper) swiper.destroy(true, true);
-    if (thumbs instanceof Swiper) thumbs.destroy(true, true);
-  }
-
-  window.popupSlides = {
-    init: initSlides,
-    destroy: destroySlides,
-  };
 }
+
+/** @param {HTMLElement} popup */
+function initSlides(popup) {
+  const activePopup = popup ?? document.querySelector(".popup--show");
+  const popupSwiper = activePopup.querySelector(".popup-swiper");
+  const popupThumbs = activePopup.querySelector(".popup-thumbs");
+
+  if (popupSwiper && popupThumbs) {
+    thumbs = new Swiper(popupThumbs, {
+      breakpoints: {
+        501: {
+          slidesPerView: 5,
+        },
+        769: {
+          slidesPerView: 4,
+          spaceBetween: 20,
+        },
+      },
+      slidesPerView: 3,
+      spaceBetween: 10,
+    });
+
+    swiper = new Swiper(popupSwiper, {
+      modules: [Keyboard, Navigation, Thumb,],
+      keyboard: {
+        enabled: true,
+        pageUpDown: false,
+      },
+      navigation: {
+        enabled: true,
+        nextEl: ".popup-arrows__button--next",
+        prevEl: ".popup-arrows__button--prev",
+      },
+      thumbs: {
+        swiper: thumbs,
+      },
+      spaceBetween: 20,
+    });
+  }
+}
+
+function destroySlides() {
+  if (swiper instanceof Swiper) swiper.destroy(true, true);
+  if (thumbs instanceof Swiper) thumbs.destroy(true, true);
+}
+
+/** @type {NodeListOf<HTMLDivElement>} */
+const popupSlides = document.querySelectorAll(".object:not(.popup), .product:not(.popup)");
+
+popupSlides?.forEach(popupSlide => {
+  initSlides(popupSlide);
+});
+
+window.popupSlides = {
+  init: initSlides,
+  destroy: destroySlides,
+};
 
 ;// CONCATENATED MODULE: ./src/js/modules/same.js
 class Same {
@@ -10809,6 +10817,11 @@ function copy() {
   }
 }
 
+/** @type {HTMLDivElement} */
+const copyButton = document.querySelector(".product:not(.popup) .popup-copy");
+
+if (copyButton) copy();
+
 window.copyProductId = copy;
 
 ;// CONCATENATED MODULE: ./src/js/scripts/scripts.js
@@ -10926,13 +10939,13 @@ if (objectsSlider && objectsThumbs) {
 
 
 /** @type {Swiper} */
-let swiper;
+let certificates_swiper;
 
 function initProductCertificatesSlider() {
   const productCertificatesSlider = document.querySelector(".product-certificates-slider");
 
   if (productCertificatesSlider) {
-    swiper = new Swiper(productCertificatesSlider, {
+    certificates_swiper = new Swiper(productCertificatesSlider, {
       modules: [Keyboard,],
       keyboard: {
         enabled: true,
@@ -10950,61 +10963,20 @@ function initProductCertificatesSlider() {
 }
 
 function destroyProductCertificatesSlider() {
-  if (swiper instanceof Swiper) swiper.destroy();
+  if (certificates_swiper instanceof Swiper) certificates_swiper.destroy();
 }
+
+/** @type {HTMLDivElement} */
+const productCertificatesSlider = document.querySelector(".product:not(.popup) .product-certificates-slider");
+
+if (productCertificatesSlider) initProductCertificatesSlider();
 
 window.certificatesSlider = {
   init: initProductCertificatesSlider,
   destroy: destroyProductCertificatesSlider,
 };
 
-;// CONCATENATED MODULE: ./src/js/libraries/swiper/sliders/popup.js
-
-
-
-/** @type {NodeListOf<HTMLDivElement>} */
-const popupSlides = document.querySelectorAll(".object:not(.popup) .popup-slider, .product:not(.popup)");
-
-popupSlides?.forEach(popupSlide => {
-  const popupSwiper = popupSlide.querySelector(".popup-swiper");
-  const popupThumbs = popupSlide.querySelector(".popup-thumbs");
-
-  if (popupSwiper && popupThumbs) {
-    const thumbs = new Swiper(popupThumbs, {
-      breakpoints: {
-        501: {
-          slidesPerView: 5,
-        },
-        769: {
-          slidesPerView: 4,
-          spaceBetween: 20,
-        },
-      },
-      slidesPerView: 3,
-      spaceBetween: 10,
-    });
-
-    const swiper = new Swiper(popupSwiper, {
-      modules: [Keyboard, Navigation, Thumb,],
-      keyboard: {
-        enabled: true,
-        pageUpDown: false,
-      },
-      navigation: {
-        enabled: true,
-        nextEl: ".popup-arrows__button--next",
-        prevEl: ".popup-arrows__button--prev",
-      },
-      thumbs: {
-        swiper: thumbs,
-      },
-      spaceBetween: 20,
-    });
-  }
-});
-
 ;// CONCATENATED MODULE: ./src/js/libraries/swiper/swiper.js
-
 
 
 
