@@ -10496,116 +10496,123 @@ popupMoreButtons?.forEach(button => {
   }
 });
 
-const min769px = matchMedia("(min-width: 769px)");
-/** @type {NodeListOf<HTMLButtonElement>} */
-const popupObjectButtons = document.querySelectorAll("[data-popup=\"object\"]");
-/** @type {NodeListOf<HTMLButtonElement>} */
-const popupProductButtons = document.querySelectorAll("[data-popup=\"product\"]");
 /** @type {HTMLDivElement} */
 const popupObject = document.querySelector("[data-card=\"object\"]");
 /** @type {HTMLDivElement} */
 const popupProduct = document.querySelector("[data-card=\"product\"]");
 
-/** @type {Swiper} */
-let swiper;
-/** @type {Swiper} */
-let thumbs;
+if (popupObject || popupProduct) {
+  const min769px = matchMedia("(min-width: 769px)");
 
-if (popupObjectButtons.length && popupObject) {
-  popupInit(popupObjectButtons, popupObject);
-}
+  /** @type {Swiper} */
+  let swiper;
+  /** @type {Swiper} */
+  let thumbs;
 
-if (popupProductButtons.length && popupProduct) {
-  popupInit(popupProductButtons, popupProduct);
-}
-
-/**
- * @param {NodeListOf<HTMLButtonElement>} buttons
- * @param {HTMLDivElement} popup
- */
-function popupInit(buttons, popup) {
-  buttons.forEach(button => {
-    button.addEventListener("click", event => {
-      showPopup(event, popup);
-    });
-  });
-
-  popup.addEventListener("click", event => {
+  document.addEventListener("click", event => {
     /** @type {{target: HTMLElement}} */
     const { target } = event;
 
-    if (!target.closest(".popup-block") || target.closest(".popup-block__close")) hidePopup(popup);
+    if (target.closest("[data-popup=\"object\"]")) {
+      if (popupObject) showPopup(event, popupObject);
+    } else if (target.closest("[data-popup=\"product\"]")) {
+      if (popupObject) showPopup(event, popupProduct);
+    }
   });
 
   document.addEventListener("keydown", event => {
     const { code } = event;
 
-    if (code === "Escape") hidePopup(popup);
+    if (code === "Escape") hidePopup();
   });
-}
 
-/**
- * @param {MouseEvent} event
- * @param {HTMLElement} popup
- */
-function showPopup(event, popup) {
-  if (min769px.matches) {
-    event.preventDefault();
-    initSlides(popup);
-    popup.classList.add("popup--show");
-    Scrolling.lock();
+  if (popupObject) popupClickEvent(popupObject);
+
+  if (popupProduct) popupClickEvent(popupProduct);
+
+  /**
+   * @param {MouseEvent} event
+   * @param {HTMLElement} popup
+   */
+  function showPopup(event, popup) {
+    if (min769px.matches) {
+      document.dispatchEvent(new Event("beforepopupcardshow"));
+      event.preventDefault();
+      popup.classList.add("popup--show");
+      Scrolling.lock();
+      document.dispatchEvent(new Event("afterpopupcardshow"));
+    }
   }
-}
 
-/** @param {HTMLElement} popup */
-function hidePopup(popup) {
-  popup.classList.remove("popup--show");
-  Scrolling.unlock();
-  destroySlides();
-}
+  function hidePopup() {
+    const activePopup = document.querySelector(".popup--show");
 
-/** @param {HTMLElement} popup */
-function initSlides(popup) {
-  const popupSwiper = popup.querySelector(".popup-swiper");
-  const popupThumbs = popup.querySelector(".popup-thumbs");
+    if (activePopup) {
+      document.dispatchEvent(new Event("beforepopupcardhide"));
+      activePopup.classList.remove("popup--show");
+      Scrolling.unlock();
+      document.dispatchEvent(new Event("afterpopupcardhide"));
+    }
+  }
 
-  if (popupSwiper && popupThumbs) {
-    thumbs = new Swiper(popupThumbs, {
-      breakpoints: {
-        501: {
-          slidesPerView: 5,
-        },
-        769: {
-          slidesPerView: 4,
-          spaceBetween: 20,
-        },
-      },
-      slidesPerView: 3,
-      spaceBetween: 10,
-    });
+  /** @param {HTMLElement} popup */
+  function popupClickEvent(popup) {
+    popup.addEventListener("click", event => {
+      /** @type {{target: HTMLElement}} */
+      const { target } = event;
 
-    swiper = new Swiper(popupSwiper, {
-      modules: [Keyboard, Navigation, Thumb,],
-      keyboard: {
-        enabled: true,
-        pageUpDown: false,
-      },
-      navigation: {
-        enabled: true,
-        nextEl: ".popup-arrows__button--next",
-        prevEl: ".popup-arrows__button--prev",
-      },
-      thumbs: {
-        swiper: thumbs,
-      },
-      spaceBetween: 20,
+      if (!target.closest(".popup-block") || target.closest(".popup-block__close")) hidePopup(popup);
     });
   }
-}
 
-function destroySlides() {
-  swiper.destroy(true, true);
-  thumbs.destroy(true, true);
+  function initSlides() {
+    const activePopup = document.querySelector(".popup--show");
+    const popupSwiper = activePopup.querySelector(".popup-swiper");
+    const popupThumbs = activePopup.querySelector(".popup-thumbs");
+
+    if (popupSwiper && popupThumbs) {
+      thumbs = new Swiper(popupThumbs, {
+        breakpoints: {
+          501: {
+            slidesPerView: 5,
+          },
+          769: {
+            slidesPerView: 4,
+            spaceBetween: 20,
+          },
+        },
+        slidesPerView: 3,
+        spaceBetween: 10,
+      });
+
+      swiper = new Swiper(popupSwiper, {
+        modules: [Keyboard, Navigation, Thumb,],
+        keyboard: {
+          enabled: true,
+          pageUpDown: false,
+        },
+        navigation: {
+          enabled: true,
+          nextEl: ".popup-arrows__button--next",
+          prevEl: ".popup-arrows__button--prev",
+        },
+        thumbs: {
+          swiper: thumbs,
+        },
+        spaceBetween: 20,
+      });
+    }
+  }
+
+  function destroySlides() {
+    if (swiper instanceof Swiper) swiper.destroy(true, true);
+    if (thumbs instanceof Swiper) thumbs.destroy(true, true);
+  }
+
+  window.popupSlides = {
+    init: initSlides,
+    destroy: destroySlides,
+  };
 }
 
 ;// CONCATENATED MODULE: ./src/js/modules/same.js

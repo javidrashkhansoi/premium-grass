@@ -2921,9 +2921,13 @@ html:not(.scrolled) .up {
   column-gap: 20px;
   inline-size: calc(100% - (100% - var(--gap, 10px) * (var(--count, 3) - 1)) / var(--count, 3) + 48px);
   transform: translate(-50%, -50%);
-  transition-property: inline-size;
+  transition-property: inline-size, opacity;
   transition-duration: 0.3s;
   pointer-events: none;
+}
+
+.popup .popup-thumbs:not(.swiper-initialized) ~ .popup-arrows {
+  opacity: 0;
 }
 
 .popup-arrows__button {
