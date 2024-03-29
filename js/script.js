@@ -8221,11 +8221,11 @@ function Controller(_ref) {
       if (duration !== 0) {
         c.transitionStart();
         if (c.params.autoHeight) {
-          utils_nextTick(() => {
+          nextTick(() => {
             c.updateAutoHeight();
           });
         }
-        utils_elementTransitionEnd(c.wrapperEl, () => {
+        elementTransitionEnd(c.wrapperEl, () => {
           if (!controlled) return;
           c.transitionEnd();
         });
@@ -10514,9 +10514,9 @@ if (popupObject || popupProduct) {
     const { target } = event;
 
     if (target.closest("[data-popup=\"object\"]")) {
-      if (popupObject) showPopup(event, popupObject);
+      if (popupObject) showPopup(event, popupObject, target.closest("[data-popup=\"object\"]"));
     } else if (target.closest("[data-popup=\"product\"]")) {
-      if (popupObject) showPopup(event, popupProduct);
+      if (popupObject) showPopup(event, popupProduct, target.closest("[data-popup=\"product\"]"));
     }
   });
 
@@ -10533,14 +10533,29 @@ if (popupObject || popupProduct) {
   /**
    * @param {MouseEvent} event
    * @param {HTMLElement} popup
+   * @param {HTMLElement} button
    */
-  function showPopup(event, popup) {
+  function showPopup(event, popup, button) {
     if (min769px.matches) {
+      window.popupElements = {
+        button,
+        popup,
+      };
+
+      const { dataset } = popup;
+      const { card } = dataset;
+
+      if (card === "object") document.dispatchEvent(new Event("beforeobjectpopupcardshow"));
+      if (card === "product") document.dispatchEvent(new Event("beforeproductpopupcardshow"));
+
       document.dispatchEvent(new Event("beforepopupcardshow"));
       event.preventDefault();
       popup.classList.add("popup--show");
       Scrolling.lock();
       document.dispatchEvent(new Event("afterpopupcardshow"));
+
+      if (card === "object") document.dispatchEvent(new Event("afterobjectpopupcardshow"));
+      if (card === "product") document.dispatchEvent(new Event("afterproductpopupcardshow"));
     }
   }
 
@@ -10548,10 +10563,19 @@ if (popupObject || popupProduct) {
     const activePopup = document.querySelector(".popup--show");
 
     if (activePopup) {
+      const { dataset } = activePopup;
+      const { card } = dataset;
+
+      if (card === "object") document.dispatchEvent(new Event("beforeobjectpopupcardhide"));
+      if (card === "product") document.dispatchEvent(new Event("beforeproductpopupcardhide"));
+
       document.dispatchEvent(new Event("beforepopupcardhide"));
       activePopup.classList.remove("popup--show");
       Scrolling.unlock();
       document.dispatchEvent(new Event("afterpopupcardhide"));
+
+      if (card === "object") document.dispatchEvent(new Event("afterobjectpopupcardhide"));
+      if (card === "product") document.dispatchEvent(new Event("afterproductpopupcardhide"));
     }
   }
 
@@ -10755,33 +10779,37 @@ if (pricesLabels.length) {
 }
 
 ;// CONCATENATED MODULE: ./src/js/scripts/scripts/copy.js
-/** @type {HTMLButtonElement} */
-const copyButton = document.querySelector(".popup-copy");
-/** @type {HTMLSpanElement} */
-const span = copyButton?.querySelector(".popup-copy__text");
-const copy_text = span?.querySelector("span");
+function copy() {
+  /** @type {HTMLButtonElement} */
+  const copyButton = document.querySelector(".popup-copy");
+  /** @type {HTMLSpanElement} */
+  const span = copyButton?.querySelector(".popup-copy__text");
+  const text = span?.querySelector("span");
 
-if (copy_text) {
-  copyButton.addEventListener("click", () => {
-    if (!copyButton.classList.contains("popup-copy--clicked")) {
-      const { dataset } = copyButton;
-      const { copy = "скопировано" } = dataset;
-      const html = span.innerHTML;
-      const textContent = copy_text.innerText;
+  if (text) {
+    copyButton.addEventListener("click", () => {
+      if (!copyButton.classList.contains("popup-copy--clicked")) {
+        const { dataset } = copyButton;
+        const { copy = "скопировано" } = dataset;
+        const html = span.innerHTML;
+        const textContent = text.innerText;
 
-      navigator.clipboard.writeText(textContent)
-        .then(() => {
-          copyButton.classList.add("popup-copy--clicked");
-          span.innerHTML = copy;
+        navigator.clipboard.writeText(textContent)
+          .then(() => {
+            copyButton.classList.add("popup-copy--clicked");
+            span.innerHTML = copy;
 
-          setTimeout(() => {
-            copyButton.classList.remove("popup-copy--clicked");
-            span.innerHTML = html;
-          }, 1000);
-        });
-    }
-  });
+            setTimeout(() => {
+              copyButton.classList.remove("popup-copy--clicked");
+              span.innerHTML = html;
+            }, 1000);
+          });
+      }
+    });
+  }
 }
+
+window.copyProductId = copy;
 
 ;// CONCATENATED MODULE: ./src/js/scripts/scripts.js
 
@@ -10861,14 +10889,12 @@ const objectsSlider = document.querySelector(".objects-thumbs");
 
 if (objectsSlider && objectsThumbs) {
   const thumbs = new Swiper(objectsThumbs, {
-    modules: [Controller,],
-    loop: true,
-    loopAddBlankSlides: true,
     spaceBetween: 20,
+    allowTouchMove: false,
   });
 
   const swiper = new Swiper(objectsSlider, {
-    modules: [Keyboard, Navigation, Controller,],
+    modules: [Keyboard, Navigation, Thumb,],
     keyboard: {
       enabled: true,
       pageUpDown: false,
@@ -10878,13 +10904,13 @@ if (objectsSlider && objectsThumbs) {
       nextEl: ".objects-arrows__button--next",
       prevEl: ".objects-arrows__button--prev",
     },
+    thumbs: {
+      swiper: thumbs,
+    },
     breakpoints: {
       993: {
         spaceBetween: 20,
       },
-    },
-    controller: {
-      control: thumbs,
     },
     loop: true,
     loopAddBlankSlides: true,
@@ -10893,32 +10919,44 @@ if (objectsSlider && objectsThumbs) {
     centeredSlides: true,
     slideToClickedSlide: true,
   });
-
-  thumbs.controller.control = swiper;
 }
 
 ;// CONCATENATED MODULE: ./src/js/libraries/swiper/sliders/certificates.js
 
 
 
-const productCertificatesSlider = document.querySelector(".product-certificates-slider");
+/** @type {Swiper} */
+let swiper;
 
-if (productCertificatesSlider) {
-  const swiper = new Swiper(productCertificatesSlider, {
-    modules: [Keyboard,],
-    keyboard: {
-      enabled: true,
-      pageUpDown: false,
-    },
-    breakpoints: {
-      501: {
-        slidesPerView: 4,
+function initProductCertificatesSlider() {
+  const productCertificatesSlider = document.querySelector(".product-certificates-slider");
+
+  if (productCertificatesSlider) {
+    swiper = new Swiper(productCertificatesSlider, {
+      modules: [Keyboard,],
+      keyboard: {
+        enabled: true,
+        pageUpDown: false,
       },
-    },
-    slidesPerView: 3,
-    spaceBetween: 10,
-  });
+      breakpoints: {
+        501: {
+          slidesPerView: 4,
+        },
+      },
+      slidesPerView: 3,
+      spaceBetween: 10,
+    });
+  }
 }
+
+function destroyProductCertificatesSlider() {
+  if (swiper instanceof Swiper) swiper.destroy();
+}
+
+window.certificatesSlider = {
+  init: initProductCertificatesSlider,
+  destroy: destroyProductCertificatesSlider,
+};
 
 ;// CONCATENATED MODULE: ./src/js/libraries/swiper/sliders/popup.js
 
