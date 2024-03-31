@@ -2318,7 +2318,7 @@ html:not(.scrolled) .up {
 
 .sport__inner {
   display: grid;
-  grid-template-columns: repeat(calc(100vw - (20px + min(20px, 10px + 10 * ((100vw - 375px) / 985))))/2, 1fr);
+  grid-template-columns: repeat(calc((100vw - (40px + min(20px, 10px + 10 * ((100vw - 375px) / 985)))) / 2), 1fr);
   grid-template-areas: "left top" "left installation" "left installation" "bottom installation" "bottom installation" "bottom right";
   gap: min(20px, 10px + 10 * ((100vw - 375px) / 985));
   overflow: hidden;
