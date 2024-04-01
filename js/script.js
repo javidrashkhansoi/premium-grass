@@ -10786,6 +10786,16 @@ if (pricesLabels.length) {
   });
 }
 
+/** @type {NodeListOf<HTMLDivElement>} */
+const popupThumbsSlides = document.querySelectorAll(".popup-thumbs__slide");
+
+if (popupThumbsSlides.length) {
+  const same = new Same({
+    same: "width",
+    selector: ".popup-thumbs__slide",
+  });
+}
+
 ;// CONCATENATED MODULE: ./src/js/scripts/scripts/copy.js
 function copy() {
   /** @type {HTMLButtonElement} */

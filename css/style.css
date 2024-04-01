@@ -1023,13 +1023,13 @@ button.swiper-pagination-bullet {
   align-items: center;
   flex: 0 0 auto;
   inline-size: 0;
-  aspect-ratio: 1/1;
+  block-size: 0;
   font-size: 0;
   color: #252626;
   background-color: #f3f4f3;
   border-radius: 50%;
   overflow: hidden;
-  transition-property: inline-size, color, background-color;
+  transition-property: inline-size, block-size, color, background-color;
   transition-duration: 0.3s;
 }
 
@@ -1259,7 +1259,7 @@ body {
 
 .header-contacts {
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   align-items: center;
   -moz-column-gap: 16px;
   column-gap: 16px;
@@ -1300,7 +1300,7 @@ body {
 .header-tel::after {
   content: "";
   inline-size: 9px;
-  aspect-ratio: 1/1;
+  block-size: 9px;
   font-size: 0;
   background-color: #51d66a;
   border-radius: 50%;
@@ -1620,6 +1620,8 @@ html:not(.scrolled) .up {
 }
 
 .hero-list {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -2894,8 +2896,7 @@ html:not(.scrolled) .up {
 }
 
 .popup-thumbs__slide {
-  block-size: auto;
-  aspect-ratio: 105/104;
+  block-size: calc(var(--same-width) * 104 / 105);
   border-radius: 16px;
   transition-property: opacity;
   transition-duration: 0.3s;
@@ -3409,7 +3410,7 @@ html:not(.scrolled) .up {
   }
 
   .popup-thumbs__slide {
-    aspect-ratio: 103/102;
+    block-size: calc(var(--same-width) * 102 / 103);
   }
 
   .popup-arrows {
@@ -3751,7 +3752,7 @@ html:not(.scrolled) .up {
 
   .burger-button {
     inline-size: 40px;
-    aspect-ratio: 1/1;
+    block-size: 40px;
   }
 
   .burger-button::before,
@@ -4087,6 +4088,7 @@ html:not(.scrolled) .up {
 
   .hero-card:hover .hero-card__icon {
     inline-size: 40px;
+    block-size: 40px;
   }
 
   .hero-card--played:hover .hero-card__title {
